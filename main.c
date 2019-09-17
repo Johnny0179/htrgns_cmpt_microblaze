@@ -134,17 +134,20 @@ char HWstring[15] = "Hello World";
 long RxtaskCntr = 0;
 
 int main(void) {
+  const TickType_t x1second = pdMS_TO_TICKS(DELAY_1_SECOND);
+  //   bram check
   int Status;
 
   Status = BramExample(BRAM_DEVICE_ID);
   if (Status != XST_SUCCESS) {
-    xil_printf("Bram Example Failed\r\n");
+    xil_printf("Bram Check Failed\r\n");
     return XST_FAILURE;
   }
 
   xil_printf("Successfully ran Bram Example\r\n");
   return XST_SUCCESS;
 
+  //   normal
   const TickType_t x10seconds = pdMS_TO_TICKS(DELAY_10_SECONDS);
 
   xil_printf("Hello from Freertos example main\r\n");
@@ -198,8 +201,12 @@ int main(void) {
   insufficient FreeRTOS heap memory available for the idle and/or timer tasks
   to be created.  See the memory management section on the FreeRTOS web site
   for more details. */
-  for (;;)
-    ;
+  for (;;) {
+    // bram write test
+    XBram_WriteReg(BRAM_BASE_ADDR, 0, 123456);
+    /* Delay for 1 second. */
+    vTaskDelay(x1second);
+  }
 }
 
 /*-----------------------------------------------------------*/
