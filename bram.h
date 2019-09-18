@@ -10,10 +10,12 @@
  * xparameters.h file. They are defined here such that a user can easily
  * change all the needed parameters in one place.
  */
-#define BRAM_DEVICE_ID XPAR_BRAM_1_DEVICE_ID
 
-// BRAM base address
-#define BRAM_BASE_ADDR XPAR_AXI_BRAM_CTRL_PL_S_AXI_BASEADDR
+// shared BRAM ID
+#define BRAM_DEVICE_ID XPAR_BRAM_3_DEVICE_ID
+
+// shared BRAM base address
+#define BRAM_BASE_ADDR XPAR_BRAM_3_BASEADDR
 
 /************************** Function Prototypes ******************************/
 
