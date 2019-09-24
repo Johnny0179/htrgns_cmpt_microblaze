@@ -100,6 +100,7 @@
 #include "timers.h"
 /* Xilinx includes. */
 #include "bram.h"
+#include "uart.h"
 #include "xil_printf.h"
 #include "xparameters.h"
 
@@ -110,47 +111,36 @@
 
 /************************** Variable Definitions *****************************/
 
-/*
- * The following are declared globally so they are zeroed and so they are
- * easily accessible from a debugger
- */
-XBram Bram; /* The Instance of the BRAM Driver */
-
 /*-----------------------------------------------------------*/
 
 /* The Tx and Rx tasks as described at the top of this file. */
 static void prvTxTask(void *pvParameters);
 static void prvRxTask(void *pvParameters);
+static void prvBRAMTask(void *pvParameters);
 static void vTimerCallback(TimerHandle_t pxTimer);
+
 /*-----------------------------------------------------------*/
 
 /* The queue used by the Tx and Rx tasks, as described at the top of this
 file. */
 static TaskHandle_t xTxTask;
 static TaskHandle_t xRxTask;
+static TaskHandle_t xBRAMTask;
 static QueueHandle_t xQueue = NULL;
 static TimerHandle_t xTimer = NULL;
 char HWstring[15] = "Hello World";
 long RxtaskCntr = 0;
 
+// laser data buffer
+extern u8 laser_buffer[LASER_BUF_SIZE];
+
+const TickType_t x1second = pdMS_TO_TICKS(DELAY_1_SECOND);
+const TickType_t x10seconds = pdMS_TO_TICKS(DELAY_10_SECONDS);
+
 int main(void) {
-  const TickType_t x1second = pdMS_TO_TICKS(DELAY_1_SECOND);
-  //   bram check
   int Status;
 
-  Status = BramExample(BRAM_DEVICE_ID);
-  if (Status != XST_SUCCESS) {
-    xil_printf("Bram Check Failed\r\n");
-    return XST_FAILURE;
-  }
-
-  xil_printf("Successfully ran Bram Example\r\n");
-  return XST_SUCCESS;
-
-  //   normal
-  const TickType_t x10seconds = pdMS_TO_TICKS(DELAY_10_SECONDS);
-
-  xil_printf("Hello from Freertos example main\r\n");
+  Status = UartCheck();
 
   /* Create the two tasks.  The Tx task is given a lower priority than the
   Rx task, so the Rx task will leave the Blocked state and pre-empt the Tx
@@ -165,6 +155,10 @@ int main(void) {
 
   xTaskCreate(prvRxTask, (const char *)"GB", configMINIMAL_STACK_SIZE, NULL,
               tskIDLE_PRIORITY + 1, &xRxTask);
+
+  // BRAM task
+  xTaskCreate(prvBRAMTask, (const char *)"BRAM", configMINIMAL_STACK_SIZE, NULL,
+              tskIDLE_PRIORITY + 2, &xBRAMTask);
 
   /* Create the queue used by the tasks.  The Rx task has a higher priority
   than the Tx task, so will preempt the Tx task and remove values from the
@@ -202,8 +196,6 @@ int main(void) {
   to be created.  See the memory management section on the FreeRTOS web site
   for more details. */
   for (;;) {
-    // bram write test
-    XBram_WriteReg(BRAM_BASE_ADDR, 0, 123456);
     /* Delay for 1 second. */
     vTaskDelay(x1second);
   }
@@ -211,8 +203,6 @@ int main(void) {
 
 /*-----------------------------------------------------------*/
 static void prvTxTask(void *pvParameters) {
-  const TickType_t x1second = pdMS_TO_TICKS(DELAY_1_SECOND);
-
   for (;;) {
     /* Delay for 1 second. */
     vTaskDelay(x1second);
@@ -238,6 +228,15 @@ static void prvRxTask(void *pvParameters) {
     /* Print the received data. */
     xil_printf("Rx task received string from Tx task: %s\r\n", Recdstring);
     RxtaskCntr++;
+  }
+}
+
+static void prvBRAMTask(void *pvParameters) {
+  for (;;) {
+    // bram write test
+    XBram_WriteReg(BRAM_BASE_ADDR, 0, laser_buffer[0]);
+
+    vTaskDelay(x1second);
   }
 }
 
