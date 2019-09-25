@@ -32,82 +32,57 @@
 /****************************************************************************/
 /**
  *
- * @file		xuartps_intr_example.c
+ * @file     xuartps_polled_example.c
  *
- * This file contains a design example using the XUartPs driver in interrupt
- * mode. It sends data and expects to receive the same data through the device
+ * This file contains an example using the XUartPs driver in polled mode.
+ *
+ * This function sends data and expects to receive the data thru the device
  * using the local loopback mode.
  *
- *
  * @note
- * The example contains an infinite loop such that if interrupts are not
- * working it may hang.
+ * If the device does not work properly, the example may hang.
  *
  * MODIFICATION HISTORY:
  * <pre>
  * Ver   Who    Date     Changes
- * ----- ------ -------- ----------------------------------------------
+ * ----- ------ -------- -----------------------------------------------
  * 1.00a  drg/jz 01/13/10 First Release
- * 1.00a  sdm    05/25/11 Modified the example for supporting Peripheral tests
- *		        in SDK
- * 1.03a  sg     07/16/12 Updated the example for CR 666306. Modified
- *			the device ID to use the first Device Id
- *			and increased the receive timeout to 8
+ * 1.03a  sg     07/16/12 Modified the device ID to use the first Device Id
  *			Removed the printf at the start of the main
- *			Put the device normal mode at the end of the example
- * 3.1	kvn		04/10/15 Added code to support Zynq Ultrascale+ MP.
- * 3.1   mus     01/14/16 Added support for intc interrupt controller
- *
  * </pre>
- ****************************************************************************/
+ ******************************************************************************/
+#ifndef UART_POLLED_H
+#define UART_POLLED_H
+/***************************** Include Files *********************************/
 
-/***************************** Include Files *******************************/
-
-#include "xil_exception.h"
 #include "xil_printf.h"
 #include "xparameters.h"
-#include "xplatform_info.h"
 #include "xuartps.h"
 
-#ifdef XPAR_INTC_0_DEVICE_ID
-#include "xintc.h"
-#else
-#include "xscugic.h"
-#endif
-/************************** Constant Definitions **************************/
+/************************** Constant Definitions *****************************/
 
 /*
  * The following constants map to the XPAR parameters created in the
  * xparameters.h file. They are defined here such that a user can easily
  * change all the needed parameters in one place.
  */
-#ifdef XPAR_INTC_0_DEVICE_ID
-#define INTC XIntc
 #define UART_DEVICE_ID XPAR_XUARTPS_0_DEVICE_ID
-#define INTC_DEVICE_ID XPAR_INTC_0_DEVICE_ID
-#define UART_INT_IRQ_ID XPAR_INTC_0_UARTPS_0_VEC_ID
-#else
-#define INTC XScuGic
-#define UART_DEVICE_ID XPAR_XUARTPS_0_DEVICE_ID
-#define INTC_DEVICE_ID XPAR_SCUGIC_SINGLE_DEVICE_ID
-#define UART_INT_IRQ_ID XPAR_XUARTPS_1_INTR
-#endif
+
 /*
  * The following constant controls the length of the buffers to be sent
- * and received with the UART,
+ * and received with the device, this constant must be 32 bytes or less since
+ * only as much as FIFO size data can be sent or received in polled mode.
  */
-#define TEST_BUFFER_SIZE 100
-#define LASER_BUF_SIZE 1
-/**************************** Type Definitions ******************************/
+#define SIZE 32
 
-/************************** Function Prototypes *****************************/
+/**************************** Type Definitions *******************************/
 
-int UartPsIntrExample(INTC *IntcInstPtr, XUartPs *UartInstPtr, u16 DeviceId,
-                      u16 UartIntrId);
+/***************** Macros (Inline Functions) Definitions *********************/
 
-int SetupInterruptSystem(INTC *IntcInstancePtr, XUartPs *UartInstancePtr,
-                                u16 UartIntrId);
+/************************** Function Prototypes ******************************/
 
-void Handler(void *CallBackRef, u32 Event, unsigned int EventData);
+int UartPsPolledExample(u16 DeviceId);
 
-int UartCheck();
+int UartPolledCheck();
+
+#endif

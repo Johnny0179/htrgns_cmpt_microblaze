@@ -22,4 +22,6 @@
 int BramExample(u16 DeviceId);
 void InitializeECC(XBram_Config *ConfigPtr, u32 EffectiveAddr);
 
+int BramCheck();
+
 #endif

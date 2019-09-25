@@ -6,7 +6,7 @@ XUartPs UartPs;           /* Instance of the UART Device */
 INTC InterruptController; /* Instance of the Interrupt Controller */
 
 // laser buffer
-u8 laser_buffer[LASER_BUF_SIZE];
+extern u8 laser_buffer[LASER_BUF_SIZE];
 /*
  * The following buffers are used in this example to send and receive data
  * with the UART.
@@ -222,7 +222,7 @@ void Handler(void *CallBackRef, u32 Event, unsigned int EventData) {
       //   local loop mode
       TotalReceivedCount = EventData;
     } else {
-      //   normal mode
+      laser_buffer[0]++;
     }
   }
 
